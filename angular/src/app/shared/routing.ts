@@ -7,12 +7,13 @@ import { AboutComponent } from '../about/about.component';
 
 import { BungieNewsComponent } from '../cards/bungie-news/bungie-news.component';
 import { CountdownComponent } from '../cards/countdown/countdown.component';
-import { ItemManagerComponent } from '../cards/item-manager/item-manager.component';
+import { ItemManagerComponent } from '../cards/inventory/inventory.component';
 import { PublicEventsComponent } from '../cards/public-events/public-events.component';
-import { DownloadManifestComponent } from '../bungie/manifest/download/download.component';
+import { DownloadManifestComponent } from '../bungie/manifest/download-manifest.component';
 import { RedditComponent } from '../cards/reddit/reddit.component';
 import { StatsComponent } from '../cards/stats/stats.component';
 import { TwitchComponent } from '../cards/twitch/twitch.component';
+import { ClanLeaderboardsComponent } from '../cards/clan-leaderboards/clan-leaderboards.component'
 
 import { AuthGuard } from './guards/auth.guard';
 
@@ -80,9 +81,9 @@ const routes: Routes = [
     },
     {
         canActivate: [AuthGuard],
-        path: 'item-manager', component: ItemManagerComponent, data: {
+        path: 'inventory', component: ItemManagerComponent, data: {
             animation: 'card',
-            title: "Item Manager"
+            title: "Inventory"
         }
     },
     {
@@ -95,6 +96,12 @@ const routes: Routes = [
         path: 'stats', component: StatsComponent, data: {
             animation: 'card',
             title: "Stats"
+        }
+    },
+    {
+        path: 'clan-leaderboards', component: ClanLeaderboardsComponent, data: {
+            animation: 'card',
+            title: "Clan Leaderboards"
         }
     }
 ];

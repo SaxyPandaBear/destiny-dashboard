@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MdOptionSelectionChange } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -16,7 +16,7 @@ import 'rxjs/add/operator/startWith';
   styleUrls: ['./gamertag-autocomplete.component.scss'],
   animations: [fadeInChildren(), fadeInOut()],
 })
-export class GamertagAutocompleteComponent implements OnInit {
+export class GamertagAutocompleteComponent {
   @Input()
   public autocompleteId: string;
   private localStorageId: string;
@@ -89,14 +89,17 @@ export class GamertagAutocompleteComponent implements OnInit {
       this.filteredMemberships = this.historicMemberships;
     else
       this.filteredMemberships = this.historicMemberships.filter((membership) => {
-        var filteredLower = membership.displayName.toLowerCase();
-        var selectedLower = selectedText.toLowerCase();
+        let filteredLower = membership.displayName.toLowerCase();
+        let selectedLower = selectedText.toLowerCase();
         return filteredLower != selectedLower && filteredLower.indexOf(selectedLower) > -1;
       });
   }
 
   search() {
-    if (this.ignoreNextSearch) return;
+    if (this.ignoreNextSearch) {
+      this.ignoreNextSearch = false;
+      return;
+    }
 
     if (this.selectedText.length < 3) {
       this.sharedApp.showWarning("Please enter a valid gamertag.");
@@ -109,9 +112,9 @@ export class GamertagAutocompleteComponent implements OnInit {
       this.sharedBungie.searchDestinyPlayer(DestinyMembershipType.TIGERPSN, this.selectedText),
       this.sharedBungie.searchDestinyPlayer(DestinyMembershipType.TIGERBLIZZARD, this.selectedText)
     ]).then((responses) => {
-      var xboxResponse = responses[0];
-      var psnResponse = responses[1];
-      var blizzardResponse = responses[2];
+      let xboxResponse = responses[0];
+      let psnResponse = responses[1];
+      let blizzardResponse = responses[2];
 
       if (xboxResponse != null) this.possibleMemberships.push(xboxResponse);
       if (psnResponse != null) this.possibleMemberships.push(psnResponse);
@@ -144,7 +147,6 @@ export class GamertagAutocompleteComponent implements OnInit {
 
       //Hack to not trigger search
       this.ignoreNextSearch = true;
-      setTimeout(() => { this.ignoreNextSearch = false }, 250);
     }
   }
 
@@ -153,8 +155,8 @@ export class GamertagAutocompleteComponent implements OnInit {
     this.possibleMemberships = new Array<DestinyMembership>();
 
     //Make sure we haven't already saved this gamertag and platform combo
-    var alreadySaved: boolean = false;
-    for (var i = 0; i < this.historicMemberships.length; i++) {
+    let alreadySaved: boolean = false;
+    for (let i = 0; i < this.historicMemberships.length; i++) {
       if (this.historicMemberships[i].displayName.toLowerCase() == selectedMembership.displayName.toLowerCase() &&
         this.historicMemberships[i].membershipType == selectedMembership.membershipType) {
         alreadySaved = true;
@@ -174,7 +176,7 @@ export class GamertagAutocompleteComponent implements OnInit {
 
   removeMembershipFromHistory(event: MouseEvent, removeMembership: DestinyMembership) {
     //Remove from historic
-    for (var i = 0; i < this.historicMemberships.length; i++) {
+    for (let i = 0; i < this.historicMemberships.length; i++) {
       if (this.historicMemberships[i].displayName.toLowerCase() == removeMembership.displayName.toLowerCase() &&
         this.historicMemberships[i].membershipType == removeMembership.membershipType) {
         this.historicMemberships.splice(i, 1);

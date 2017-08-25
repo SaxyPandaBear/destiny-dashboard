@@ -14,7 +14,7 @@ export class CountdownComponent extends CardComponent {
   countdownValue: string;
 
   // Set the date we're counting down to
-  countDownDate = new Date("Sept 5, 2017 04:00:00").getTime();
+  countDownDate = new Date("Sept 6, 2017 00:00:00").getTime();
 
   constructor(public sharedApp: SharedApp) {
     super(sharedApp);
@@ -26,7 +26,7 @@ export class CountdownComponent extends CardComponent {
     this.calculateCountdown();
     this.countdownIntervalId = setInterval(() => {
       this.calculateCountdown();
-    }, 1000);
+    }, 60000);
   }
 
   ngOnDestroy() {
@@ -36,16 +36,15 @@ export class CountdownComponent extends CardComponent {
   }
 
   calculateCountdown() {
-    var now = new Date().getTime();
+    let now = new Date().getTime();
 
-    var distance = this.countDownDate - now;
+    let distance = this.countDownDate - now;
 
-    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
 
-    this.countdownValue = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+    this.countdownValue = days + "d " + hours + "h " + minutes + "m ";
   }
 
 }

@@ -1,0 +1,60 @@
+@import '../../../../styles/theme.scss';
+
+:host {
+    margin: 0 2px;
+    color: $app-text-light;
+
+    $iconHeight: 60px;
+    $iconWidth: 60px;
+
+    .icon {
+        width: $iconHeight;
+        height: $iconHeight;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        border: 1px solid #90A4AE;
+        position: relative;
+        font-size: .85em;
+
+        &.equipped {
+            border: 4px double #F44336;
+            width: $iconHeight - 6;
+            height: $iconWidth - 6;
+        }
+
+        &.selected {
+            border: 2px solid #FFEB3B;
+            width: $iconHeight - 2;
+            height: $iconWidth - 2;
+        }
+
+        .quantity {
+            color: #2A333E;
+            background-color: rgba(#fff, .7);
+            position: absolute;
+            top: 0;
+            padding: 0 3px 0 2px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .level {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            padding: 0 3px 0 4px;
+            border-top-left-radius: 4px;
+        }
+    }
+
+    .name {
+        display: inline-block;
+        font-size: .72em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: $iconWidth + 2;
+        text-align: center;
+        opacity: .8;
+    }
+}

@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { GlobalErrorHandler } from './error-handler.service';
 import { LZString } from '../utilities/lz-string';
 import { environment } from '../../../environments/environment';
-import { AlertDialog } from '../../dialog/alert.component';
+import { AlertDialog } from '../../shared/dialogs/alert.component';
 
 import { ISubNavItem, IToolbarItem } from '../../nav/nav.interface';
 import { delayBy } from '../decorators';
@@ -25,6 +25,7 @@ export class SharedApp {
     tutorialEditDashboardSubject = new Subject<boolean>();
     tutorialAddCardSubject = new Subject<boolean>();
     invalidateCachesSubject = new Subject<void>();
+    logOutSubject = new Subject<void>();
 
     // Application specific
     public appInitialized: boolean = false;
@@ -66,11 +67,11 @@ export class SharedApp {
     }
 
     onResize() {
-        var viewport = document.querySelector("meta[name=viewport]");
-        if (screen.width < 410)
-            viewport.setAttribute('content', 'width=410, initial-scale=' + screen.width / 410);
+        let viewport = document.querySelector("meta[name=viewport]");
+        if (screen.width < 420)
+            viewport.setAttribute('content', 'width=420, user-scalable=no, initial-scale=' + screen.width / 420);
         else
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1');
+            viewport.setAttribute('content', 'width=device-width, user-scalable=no, initial-scale=1');
 
         this.windowHeight = Math.max(document.body.clientHeight, window.innerHeight);
         this.windowWidth = document.body.clientWidth;
@@ -85,7 +86,6 @@ export class SharedApp {
         this.tutorialStep1();
     }
 
-    @delayBy(500)
     private tutorialStep1() {
         this.toggleMainNavSubject.next(true);
         this.snackBar.open("The main menu allows you to log in or quickly jump to one of your dashboards. Logging in will save your dashboards to your Bungie account.", "Next").afterDismissed().subscribe(() => {
@@ -127,11 +127,11 @@ export class SharedApp {
 
     getLocalStorage(key: string, defaultValue?: any): any {
         if (this.localStorageDisabled) return defaultValue;
-        var localStorageValue = localStorage.getItem(key);
+        let localStorageValue = localStorage.getItem(key);
         if (environment.production)
             localStorageValue = LZString.decompressFromUTF16(localStorageValue);
         if (typeof defaultValue === "number") {
-            var parsed = Number.parseInt(localStorageValue);
+            let parsed = Number.parseInt(localStorageValue);
             if (isNaN(parsed))
                 return defaultValue;
             return parsed;
@@ -157,12 +157,12 @@ export class SharedApp {
 
     getLocalStorageMap(key: string, defaultValue?: Map<any, any>) {
         if (this.localStorageDisabled) return defaultValue;
-        var localStorageValue = this.getLocalStorage(key);
+        let localStorageValue = this.getLocalStorage(key);
         if (localStorageValue == null)
             return defaultValue;
         try {
-            var storedMap = new Map<any, any>();
-            var storedArray: Array<any> = JSON.parse(localStorageValue);
+            let storedMap = new Map<any, any>();
+            let storedArray: Array<any> = JSON.parse(localStorageValue);
             storedArray.forEach(cacheEntry => {
                 storedMap.set(cacheEntry[0], cacheEntry[1]);
             });
@@ -175,7 +175,7 @@ export class SharedApp {
 
     getLocalStorageAsJsonObject(key: string, defaultValue?: any): any {
         if (this.localStorageDisabled) return defaultValue;
-        var localStorageValue = this.getLocalStorage(key, null);
+        let localStorageValue = this.getLocalStorage(key, null);
 
         // If local storage value doesn't exist, return the default value
         if (localStorageValue == null) return defaultValue;
@@ -201,43 +201,40 @@ export class SharedApp {
     getSessionStorage(key: string, defaultValue?: any) {
         if (this.localStorageDisabled) return defaultValue;
 
-        var sessionStorageValue = sessionStorage.getItem(key);
+        let sessionStorageValue = sessionStorage.getItem(key);
         if (sessionStorageValue == null)
             return defaultValue;
         return sessionStorageValue
     }
 
-    @delayBy(25)
+    @delayBy(10)
     showLoading(loadingId: any) {
         this.showLoadingIds.set(loadingId, true);
     }
 
     @delayBy(50)
     hideLoading(loadingId: any) {
-        setTimeout(() => {
-            if (this.showLoadingIds.has(loadingId))
-                this.showLoadingIds.delete(loadingId);
-        }, 50);
+        if (this.showLoadingIds.has(loadingId))
+            this.showLoadingIds.delete(loadingId);
     }
 
     openExternalLink(url: string) {
         window.open(url, "_blank");
     }
 
-    //Set Timeout to make sure this runs on the next free tick to let Angular finish whatever it was doing
-    @delayBy(1)
+    @delayBy(10)
     showError(errorMessage: string, error?: any) {
         this.toastrService.error(errorMessage, null, { progressBar: true, closeButton: true, timeOut: 5000, messageClass: 'toast-message' });
 
         this.globalErrorHandler.handleError(error);
     }
 
-    @delayBy(1)
-    showInfo(infoMessage: string) {
-        this.toastrService.info(infoMessage);
+    @delayBy(10)
+    showInfo(infoMessage: string, options?: any) {
+        this.toastrService.info(infoMessage, null, options);
     }
 
-    @delayBy(1)
+    @delayBy(10)
     showInfoOnce(infoMessage: string) {
         if (sessionStorage.getItem(infoMessage))
             return;
@@ -245,12 +242,12 @@ export class SharedApp {
         sessionStorage.setItem(infoMessage, "1");
     }
 
-    @delayBy(1)
-    showWarning(warnMessage: string) {
-        this.toastrService.warning(warnMessage);
+    @delayBy(10)
+    showWarning(warnMessage: string, options?: any) {
+        this.toastrService.warning(warnMessage, null, options);
     }
 
-    @delayBy(1)
+    @delayBy(10)
     showSuccess(successMessage: string) {
         this.toastrService.success(successMessage);
     }

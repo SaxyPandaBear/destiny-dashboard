@@ -33,9 +33,10 @@ import { HttpService } from './shared/services/http.service';
 import { CustomReuseStrategy, Routing } from './shared/routing';
 
 //Dialogs
-import { AlertDialog } from './dialog/alert.component';
-import { ConfirmDialog } from './dialog/confirm.component';
-import { SimpleInputDialog } from './dialog/simple-input.component';
+import { AlertDialog } from './shared/dialogs/alert.component';
+import { ConfirmDialog } from './shared/dialogs/confirm.component';
+import { FiltersDialog } from './cards/inventory/filters-dialog/filters-dialog.component';
+import { SimpleInputDialog } from './shared/dialogs/simple-input.component';
 
 //Base Components
 import { AddCardComponent } from './dashboard/add-card/add-card.component';
@@ -45,14 +46,16 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 
 //Other components 
 import { AboutComponent } from './about/about.component';
-import { DownloadManifestComponent } from './bungie/manifest/download/download.component';
+import { DownloadManifestComponent } from './bungie/manifest/download-manifest.component';
 import { GamertagAutocompleteComponent } from './bungie/components/gamertag-autocomplete/gamertag-autocomplete.component';
+import { InventoryItemComponent } from './bungie/components/inventory-item/inventory-item.component';
 import { MdTabCharacterHeadingComponent } from './bungie/components/md-tab-character-heading/md-tab-character-heading.component';
 
 //Cards
 import { BungieNewsComponent } from './cards/bungie-news/bungie-news.component';
 import { CountdownComponent } from './cards/countdown/countdown.component';
-import { ItemManagerComponent } from './cards/item-manager/item-manager.component';
+import { ClanLeaderboardsComponent } from './cards/clan-leaderboards/clan-leaderboards.component';
+import { ItemManagerComponent } from './cards/inventory/inventory.component';
 import { PublicEventsComponent } from './cards/public-events/public-events.component';
 import { RedditComponent } from './cards/reddit/reddit.component';
 import { StatsComponent } from './cards/stats/stats.component';
@@ -78,16 +81,16 @@ import { NumberFormatLocalePipe, RoundToDecimalPlacePipe } from './shared/pipes/
     AppComponent, NavComponent,
 
     //Dialogs
-    AlertDialog, ConfirmDialog, SimpleInputDialog,
+    AlertDialog, ConfirmDialog, FiltersDialog, SimpleInputDialog,
 
     //Base Components
     AddCardComponent, CardHeaderComponent, CardLoaderComponent, DashboardComponent,
 
     //Other components 
-    AboutComponent, DownloadManifestComponent, GamertagAutocompleteComponent, MdTabCharacterHeadingComponent,
+    AboutComponent, DownloadManifestComponent, GamertagAutocompleteComponent, InventoryItemComponent, MdTabCharacterHeadingComponent,
 
     //Cards
-    BungieNewsComponent, CountdownComponent, ItemManagerComponent, PublicEventsComponent, RedditComponent, StatsComponent, TwitchComponent, GrimoireComponent,
+    BungieNewsComponent, ClanLeaderboardsComponent, CountdownComponent, ItemManagerComponent, PublicEventsComponent, RedditComponent, StatsComponent, TwitchComponent, GrimoireComponent,
 
     //Directives
     ModalDirective, MouseEventsDirective, ScrollWithElementDirective, Swipeable,
@@ -97,7 +100,7 @@ import { NumberFormatLocalePipe, RoundToDecimalPlacePipe } from './shared/pipes/
   ],
 
   entryComponents: [
-    AlertDialog, ConfirmDialog, SimpleInputDialog
+    AlertDialog, ConfirmDialog, FiltersDialog, SimpleInputDialog
   ],
   imports: [
     Angulartics2Module.forRoot([Angulartics2GoogleAnalytics]),

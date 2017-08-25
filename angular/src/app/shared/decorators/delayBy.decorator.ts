@@ -1,7 +1,11 @@
+/**
+ * Delays a function call by provided ms
+ * @param {number} milliseconds
+ */
 export function delayBy(milliseconds: number) {
   return function (target, key, descriptor) {
 
-    var originalMethod = descriptor.value;
+    let originalMethod = descriptor.value;
 
     descriptor.value = function (...args) {
       setTimeout(() => {

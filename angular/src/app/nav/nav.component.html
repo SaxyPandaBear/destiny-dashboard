@@ -7,9 +7,9 @@
     </button>
 
     <!-- Back Button (when not on the Dashboard) -->
-    <button md-icon-button *ngIf="router.url != '/dashboard'" [@fadeIn] (click)="backToDashboard()" class="nav-back-button">
+    <button disableRipple md-icon-button *ngIf="router.url != '/dashboard'" [@fadeIn] (click)="backToDashboard()" class="nav-back-button">
       <md-icon>arrow_back</md-icon>
-      Dashboard 
+      Back 
     </button>
 
     <!-- Page Title -->
@@ -85,8 +85,8 @@
       Quick Links
       <md-icon class="carrot" [class.collapsed]="quickLinksCollapsed">keyboard_arrow_down</md-icon>
     </div>
-    <md-nav-list *ngIf="sharedDashboard.selectedDashboard != null" [style.opacity]="quickLinksCollapsed ? .2:1" [style.max-height]="quickLinksCollapsed ? '0':'500px'">
-      <md-list-item (click)="navigateToRoute('/item-manager')">Item Manager</md-list-item>
+    <md-nav-list *ngIf="sharedDashboard.selectedDashboard != null" [style.max-height]="quickLinksCollapsed ? '0':'500px'">
+      <md-list-item (click)="navigateToRoute('/inventory')">Inventory</md-list-item>
       <md-list-item (click)="navigateToRoute('/stats')">Stats</md-list-item>
     </md-nav-list>
 
@@ -95,7 +95,8 @@
       Dashboards
       <md-icon class="carrot" [class.collapsed]="dashboardsCollapsed">keyboard_arrow_down</md-icon>
     </div>
-    <md-nav-list *ngFor="let dashboard of sharedDashboard.userDashboards" [style.opacity]="dashboardsCollapsed ? .2:1" [style.max-height]="dashboardsCollapsed ? '0':'500px'">
+    <md-nav-list *ngFor="let dashboard of sharedDashboard.userDashboards" [style.max-height]="dashboardsCollapsed ? '0':'500px'"
+      [style.overflow-y]="dashboardsCollapsed ? 'hidden' : 'auto'">
       <md-list-item [style.color]="dashboard == sharedDashboard.selectedDashboard ? '#03A9F4':''" (click)="selectDashboard(dashboard)">{{dashboard.name}}</md-list-item>
     </md-nav-list>
 
@@ -104,7 +105,7 @@
       Help
       <md-icon class="carrot" [class.collapsed]="helpCollapsed">keyboard_arrow_down</md-icon>
     </div>
-    <md-nav-list [style.max-height]="helpCollapsed ? '0':'200px'" [style.opacity]="helpCollapsed ? .2:1">
+    <md-nav-list [style.max-height]="helpCollapsed ? '0':'200px'">
       <md-list-item (click)="sharedApp.startTutorial()">Tutorial</md-list-item>
       <md-list-item (click)="navigateToRoute('/about')">About</md-list-item>
     </md-nav-list>
@@ -127,8 +128,8 @@
   </md-sidenav>
 
   <!-- Only load the router if the app has been initialized -->
-  <div *ngIf="sharedApp.appInitialized" [@routerTransition]="prepareRouteAnimation(routerOutlet)" class="router-wrap dd-dashboard-background">
-    <router-outlet #routerOutlet="outlet"></router-outlet>
+  <div *ngIf="sharedApp.appInitialized" class="router-wrap dd-dashboard-background">
+    <router-outlet></router-outlet>
   </div>
 
 </md-sidenav-container>

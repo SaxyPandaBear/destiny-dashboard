@@ -1,26 +1,25 @@
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { MdRadioChange, MdSidenav } from '@angular/material';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { SharedBungie } from '../bungie/shared-bungie.service';
 import { SharedDashboard } from '../dashboard/shared-dashboard.service';
 import { SharedApp } from '../shared/services/shared-app.service';
-import { fadeIn, routerTransition } from '../shared/animations';
+import { fadeIn } from '../shared/animations';
 
 import { environment } from '../../environments/environment';
 import { CardDefinitions } from '../cards/_base/card-definition';
 import { IUserDashboard } from '../cards/_base/card.interface';
 import { ISubNavItem, IToolbarItem } from '../nav/nav.interface';
 
-import 'rxjs/add/operator/filter';
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'dd-nav',
   templateUrl: './nav.component.html',
   styleUrls: ['./nav.component.scss'],
-  animations: [fadeIn(), routerTransition()],
+  animations: [fadeIn()],
 })
-export class NavComponent implements OnDestroy {
+export class NavComponent {
   @ViewChild("mainNav")
   mainNav: MdSidenav;
 
@@ -43,6 +42,7 @@ export class NavComponent implements OnDestroy {
     //Application events
     this.toggleMainNavSubscription = this.sharedApp.toggleMainNavSubject.subscribe((open: boolean) => { open ? this.mainNav.open() : this.mainNav.close() });
     this.toggleSubNavSubscription = this.sharedApp.toggleSubNavSubject.subscribe((open: boolean) => { open ? this.subNav.open() : this.subNav.close() });
+    this.logOutSubscription = this.sharedApp.logOutSubject.subscribe(() => { this.logOut(); });
 
     //Handle router end event
     router.events.subscribe((e) => {
@@ -70,8 +70,6 @@ export class NavComponent implements OnDestroy {
     })
   }
 
-  ngOnInit() { }
-
   ngOnDestroy() {
     this.toggleMainNavSubscription.unsubscribe();
   }
@@ -96,10 +94,7 @@ export class NavComponent implements OnDestroy {
     this.sharedApp.removeLocalStorage("accessToken", "accessTokenExpires", "membershipId", "bungieAuthCode");
     this.sharedDashboard.userDashboards = CardDefinitions.defaultDashboards;
     this.sharedApp.invalidateCachesSubject.next();
-  }
-
-  prepareRouteAnimation(routerOutlet) {
-    return routerOutlet.activatedRouteData['animation'] || 'dashboard';
+    this.backToDashboard();
   }
 
   //Main Nav

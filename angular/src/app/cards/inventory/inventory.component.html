@@ -1,0 +1,88 @@
+<div [class.dd-card-wrap]="!isFullscreen">
+  <dd-card-header *ngIf="!isFullscreen" [dashboardCard]="dashboardCard"></dd-card-header>
+  <div class="dd-inventory" [class.dd-fullscreen]="isFullscreen" [class.dd-card-content]="!isFullscreen">
+
+    <ng-container *ngIf="isInitialized === true">
+      <!-- Edit Menu -->
+      <div *ngIf="editMode" class="edit-menu-wrap" [@fadeInFromTop]="editMode">
+        <div class="menu-option" *ngFor="let character of accountSummary?.characters; let i = index" (click)="transferItemsToIndex(selectedInventoryItems, i)">
+          <div class="icon" [style.background-image]="domSanitizer.bypassSecurityTrustStyle('url(https://www.bungie.net' + character.emblemPath +')')"></div>
+        </div>
+        <div class="menu-option" (click)="transferItemsToIndex(selectedInventoryItems, 3)">
+          <div class="icon vault" [style.background-image]="domSanitizer.bypassSecurityTrustStyle('url(https://www.bungie.net' + towerDefinition.icon +')')"></div>
+        </div>
+        <div class="menu-option close-option" (click)="setEditMode(false)">
+          <button class="icon" md-icon-button><md-icon>close</md-icon></button>
+        </div>
+      </div>
+
+      <!-- Search Inventory -->
+      <div class="search-text-wrap">
+        <md-input-container class="search-text">
+          <input mdInput [ngModel]="searchText" (ngModelChange)="searchTextChanged($event)" placeholder="Search Inventory">
+        </md-input-container>
+      </div>
+
+      <!-- Characters -->
+      <div class="character-wrap" *ngFor="let character of accountSummary?.characters; let i = index">
+        <div class="character-header" [style.margin-top]="i == 0 ? '20px':''">
+          <img class="background" [src]="domSanitizer.bypassSecurityTrustUrl('https://www.bungie.net' + character.backgroundPath)"
+            (click)="collapseSection(i)" />
+          <div class="icon" [style.background-image]="domSanitizer.bypassSecurityTrustStyle('url(https://www.bungie.net' + character.emblemPath +')')"></div>
+          <div class="top-left">{{character.characterBase.classValue.className}}</div>
+          <div class="bottom-left">{{character.characterBase.raceValue.raceName}} {{character.characterBase.genderValue.genderName}}</div>
+          <div class="top-right">{{character.characterLevel}}</div>
+          <div class="bottom-right"><span class="star">&#10022;</span>{{character.characterBase.stats.STAT_LIGHT.value}}</div>
+
+          <button md-icon-button (click)="refreshCharacterInventory(i)" class="option refresh"><md-icon>refresh</md-icon></button>
+          <button md-icon-button (click)="collapseSection(i)" class="option carrot" [class.expanded]="expandedSections[i]"><md-icon>keyboard_arrow_up</md-icon></button>
+        </div>
+        <div *ngIf="expandedSections[i] == true" class="inventory-wrap" [@expandInShrinkOut]="expandedSections != null">
+          <div class="bucket-group" *ngFor="let bucketGroup of bucketGroupsArray[i]">
+            <ng-container *ngFor="let bucket of bucketGroup">
+              <div *ngIf="!bucket.filteredOut && bucket.items.length > 0" class="bucket-wrap">
+                <div class="bucket-header">{{bucket.bucketValue.bucketName}}</div>
+                <div class="bucket">
+                  <ng-container *ngFor="let inventoryItem of bucket.items">
+                    <dd-inventory-item *ngIf="!inventoryItem.filteredOut" [class.edit-mode]="editMode" [class.transfer-disabled]="editMode && inventoryItem.itemValue.nonTransferrable"
+                      [class.selected]="inventoryItem.selected" [inventoryItem]="inventoryItem" [disablePopup]="editMode" [equipped]="inventoryItem.transferStatus % 2 == 1"
+                      [selected]="editMode && inventoryItem.selected" (clicked)="inventoryItemClicked(inventoryItem)" (longPress)="inventoryItemLongPress(inventoryItem)"></dd-inventory-item>
+                  </ng-container>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vault -->
+      <div class="character-wrap">
+        <div class="character-header vault-header">
+          <div class="background dd-tower-background" (click)="collapseSection(3)"></div>
+          <div class="icon" [style.background-image]="domSanitizer.bypassSecurityTrustStyle('url(https://www.bungie.net' + towerDefinition.icon +')')"></div>
+          <div class="top-left">Vault</div>
+
+          <button md-icon-button class="option refresh" (click)="refreshVaultInventory()"><md-icon>refresh</md-icon></button>
+          <button md-icon-button class="option carrot" (click)="collapseSection(3)" [class.expanded]="expandedSections[3]"><md-icon>keyboard_arrow_up</md-icon></button>
+        </div>
+
+        <div *ngIf="expandedSections[3] == true" class="inventory-wrap" [@expandInShrinkOut]>
+          <div class="bucket-group" *ngFor="let bucketGroup of bucketGroupsArray[3]">
+            <ng-container *ngFor="let bucket of bucketGroup">
+              <div *ngIf="!bucket.filteredOut && bucket.items.length > 0" class="bucket-wrap">
+                <div class="bucket-header">{{bucket.bucketValue.bucketName}}</div>
+                <div class="bucket">
+                  <ng-container *ngFor="let inventoryItem of bucket.items">
+                    <dd-inventory-item *ngIf="!inventoryItem.filteredOut" [class.edit-mode]="editMode" [class.selected]="inventoryItem.selected"
+                      [inventoryItem]="inventoryItem" [disablePopup]="editMode" [equipped]="inventoryItem.transferStatus % 2 == 1"
+                      [selected]="editMode && inventoryItem.selected" (clicked)="inventoryItemClicked(inventoryItem)" (longPress)="inventoryItemLongPress(inventoryItem)"></dd-inventory-item>
+                  </ng-container>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

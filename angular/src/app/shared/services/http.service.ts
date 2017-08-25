@@ -1,9 +1,11 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SharedApp } from './shared-app.service';
 
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs/Subscription';
+
+import { ErrorTypes } from 'app/bungie/services/errors.interface';
 
 export interface ICustomCache {
     cachedData: any;
@@ -19,7 +21,7 @@ export enum HttpRequestType {
 }
 
 @Injectable()
-export class HttpService implements OnDestroy {
+export class HttpService {
     // Set api key info based on if prod or test
     public apiKey: string = environment.apiKey;
 
@@ -57,10 +59,8 @@ export class HttpService implements OnDestroy {
     }
 
     private getDashboardHeaders(): HttpHeaders {
-        if (this.sharedApp.accessToken == null)
-            throw "sharedApp.accessToken was null when calling getDashboardHeaders()";
-
-        return new HttpHeaders().set('Authorization', this.sharedApp.accessToken);
+        if (this.sharedApp.accessToken != null)
+            return new HttpHeaders().set('Authorization', this.sharedApp.accessToken);
     }
 
     //Dashboard specific calls
@@ -131,6 +131,7 @@ export class HttpService implements OnDestroy {
                 this.sharedApp.hideLoading(loadingId);
                 resolve(accessTokenResponse);
             }).catch((error) => {
+                this.sharedApp.logOutSubject.next();
                 this.sharedApp.hideLoading(loadingId);
                 reject(error);
             });
@@ -186,39 +187,16 @@ export class HttpService implements OnDestroy {
         return new Promise((resolve, reject) => {
             //If the token needs to be refreshed, do it before making the call
             this.checkBungieRefreshToken().then(() => {
-                var headers = privileged ? this.getBungiePrivilegedAuthHeaders() : this.getBungieBasicAuthHeaders();
+                let headers = privileged ? this.getBungiePrivilegedAuthHeaders() : this.getBungieBasicAuthHeaders();
                 this.httpGet(url, headers).then((response) => {
                     this.sharedApp.hideLoading(loadingId);
-                    if (response.ErrorCode != 1)
-                        throw (response);
-                    else
+                    if (response.ErrorCode == 1)
                         resolve(response);
+                    else
+                        this.handleBungieError(response, reject);
                 }).catch((error) => {
                     this.sharedApp.hideLoading(loadingId);
-
-                    //Bungie specific error we can handle probably
-                    if (error.ErrorCode) {
-                        switch (error.ErrorCode) {
-                            case 1601:
-                                this.sharedApp.showError("Could not find Destiny information for this Bungie account. Have you played with this account?");
-                                break;
-                        }
-                    }
-
-                    //Actual HTTP error 
-                    else if (error.status)
-                        //Give more detail for errors we have some info about
-                        switch (error.status) {
-                            case 401:
-                                this.sharedApp.showError("Authentication error when trying to connect to Bungie. Please try to log in again.", error);
-                                reject(error);
-                                break;
-
-                            default:
-                                console.log(error);
-                                reject(error);
-                                break;
-                        }
+                    this.handleBungieError(error, reject);
                 });
             }).catch((error) => {
                 this.sharedApp.hideLoading(loadingId);
@@ -227,12 +205,73 @@ export class HttpService implements OnDestroy {
         });
     }
 
+    public postBungie(url: string, body: any, privileged: boolean = true): Promise<any> {
+        let loadingId = Date.now();
+        this.sharedApp.showLoading(loadingId);
+
+        return new Promise((resolve, reject) => {
+            //If the token needs to be refreshed, do it before making the call
+            this.checkBungieRefreshToken().then(() => {
+                let headers = privileged ? this.getBungiePrivilegedAuthHeaders() : this.getBungieBasicAuthHeaders();
+                this.httpPost(url, body, headers).then((response) => {
+                    this.sharedApp.hideLoading(loadingId);
+                    if (response.ErrorCode == 1)
+                        resolve(response);
+                    else
+                        this.handleBungieError(response, reject);
+                }).catch((error) => {
+                    this.sharedApp.hideLoading(loadingId);
+                    this.handleBungieError(error, reject);
+                });
+            }).catch((error) => {
+                this.sharedApp.hideLoading(loadingId);
+                reject(error);
+            });
+        });
+    }
+
+    private handleBungieError(error: any, reject: any) {
+        //Bungie specific error we can handle probably
+        if (error.ErrorCode) {
+            switch (error.ErrorCode) {
+                case ErrorTypes.DestinyAccountNotFound:
+                    this.sharedApp.showError("Could not find Destiny information for this Bungie account. Have you played with this account?");
+                    break;
+
+                case ErrorTypes.DestinyUnexpectedError:
+                    this.sharedApp.showError("An error has occurred while trying to get Destiny information. It's probably an issue with Bungie's API, please try again later.", error);
+                    break;
+
+                default:
+                    // Let error bubble back up
+                    reject(error);
+                    break;
+            }
+        }
+
+        //Actual HTTP error 
+        else if (error.status)
+            //Give more detail for errors we have some info about
+            switch (error.status) {
+                case 401:
+                    this.sharedApp.showError("Authentication error when trying to connect to Bungie. Please try to log in again.", error);
+                    this.sharedApp.logOutSubject.next();
+                    reject(error);
+                    break;
+
+                default:
+                    console.log(error);
+                    reject(error);
+                    break;
+            }
+    }
+
     public getWithCache(requestUrl: string, requestType: HttpRequestType, cacheTimeMs: number): Promise<any> {
         //Fetch cache based on unique URL
-        var customCache = this.customCaches.get(requestUrl);
+        let customCache = this.customCaches.get(requestUrl);
 
         //Clear cache if it's stale or hasn't been set yet
-        if (!customCache || (customCache.cacheExpires && customCache.cacheExpires < Date.now())) {
+        if (!customCache || (customCache.cacheExpires && customCache.cacheExpires < Date.now()) || environment.disableHttpCache) {
             this.customCaches.delete(requestUrl);
 
             customCache = {
@@ -312,7 +351,7 @@ export class HttpService implements OnDestroy {
                 this.customCaches.delete(id);
         });
 
-        var cacheString = JSON.stringify(Array.from(this.customCaches));
+        let cacheString = JSON.stringify(Array.from(this.customCaches));
 
         //Make sure cache doesn't grow too big (Shouldn't happen, but just be safe)     
         //JavaScript strings are stored as UTF-16, so double the size and verify we're under the target MB   
@@ -328,7 +367,7 @@ export class HttpService implements OnDestroy {
 
     // Basic HTTP
     public httpGet(url: string, headers?: HttpHeaders): Promise<any> {
-        var loadingId = Date.now();
+        let loadingId = Date.now();
         this.sharedApp.showLoading(loadingId);
         return this.http.get(url, { headers }).toPromise().then((response) => {
             this.sharedApp.hideLoading(loadingId);
@@ -340,7 +379,7 @@ export class HttpService implements OnDestroy {
     }
 
     public httpGetBinary(url: string): Promise<any> {
-        var loadingId = Date.now();
+        let loadingId = Date.now();
         this.sharedApp.showLoading(loadingId);
         return this.http.get(url, { responseType: 'blob' }).toPromise().then((response) => {
             this.sharedApp.hideLoading(loadingId);
@@ -352,7 +391,7 @@ export class HttpService implements OnDestroy {
     }
 
     public httpPost(url: string, body: any, headers?: HttpHeaders): Promise<any> {
-        var loadingId = Date.now();
+        let loadingId = Date.now();
         this.sharedApp.showLoading(loadingId);
         return this.http.post(url, body, { headers }).toPromise().then((response) => {
             this.sharedApp.hideLoading(loadingId);
@@ -364,7 +403,7 @@ export class HttpService implements OnDestroy {
     }
 
     public httpDelete(url: string, headers?: HttpHeaders): Promise<any> {
-        var loadingId = Date.now();
+        let loadingId = Date.now();
         this.sharedApp.showLoading(loadingId);
         return this.http.delete(url, { headers }).toPromise().then((response) => {
             this.sharedApp.hideLoading(loadingId);

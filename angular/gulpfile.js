@@ -30,7 +30,7 @@ gulp.task('clean', function (done) {
 });
 
 gulp.task('aot_compile', shell.task([
-    'ng build --prod --aot --no-sourcemap --base-href ./'
+    'ng build --prod --aot --build-optimizer --no-sourcemap --base-href ./'
 ]));
 
 gulp.task('service-worker', shell.task([
@@ -48,10 +48,4 @@ gulp.task('publish', function (done) {
 
     //Defer js
     gulp.src('./build/index.html').pipe(replace('src=', 'defer src=')).pipe(gulp.dest('../java/src/main/webapp'));
-
-    setTimeout(() => {
-        gulp.src('../java/src/main/webapp/sql.js').pipe(clean({ force: true }))
-        done();
-    }, 500);
-
 });

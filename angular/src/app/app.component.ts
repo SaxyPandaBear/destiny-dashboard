@@ -1,20 +1,22 @@
 import { ChangeDetectorRef, Component, HostListener } from '@angular/core';
 import { MdDialog } from '@angular/material';
-import { ConfirmDialog } from './dialog/confirm.component';
+import { ConfirmDialog } from './shared/dialogs/confirm.component';
 import { HttpService } from './shared/services/http.service';
 import { ManifestService } from './bungie/manifest/manifest.service';
 import { SharedApp } from './shared/services/shared-app.service';
 import { SharedBungie } from './bungie/shared-bungie.service';
 import { SharedDashboard } from './dashboard/shared-dashboard.service';
 
-import { AccountStatsService, AccountSummaryService, BungieSiteNewsService, CharacterInventoryService, CharacterProgressionService, CharacterStatsService, VaultSummaryService } from './bungie/services/service.barrel';
+import {
+  AccountStatsService, AccountSummaryService, BungieSiteNewsService, CharacterInventorySummaryService, CharacterStatsService, CharacterProgressionService,
+  ClanLeaderboardsStatsService, GetBungieAccountService, InventoryItemService, VaultSummaryService
+} from './bungie/services/service.barrel';
 
 import { ICard, IUserDashboard } from './cards/_base/card.interface';
 
 import { Angulartics2GoogleAnalytics } from 'angulartics2';
 
 import { CardDefinitions } from './cards/_base/card-definition';
-import { delayBy } from './shared/decorators';
 import { fadeInOut } from './shared/animations';
 
 @Component({
@@ -28,13 +30,15 @@ import { fadeInOut } from './shared/animations';
     </div>
   </div>
   `,
-  providers: [AccountStatsService, AccountSummaryService, BungieSiteNewsService, CharacterInventoryService, CharacterProgressionService, CharacterStatsService, HttpService,
-    ManifestService, SharedBungie, SharedDashboard, VaultSummaryService],
+  providers: [AccountStatsService, AccountSummaryService, BungieSiteNewsService, ClanLeaderboardsStatsService, CharacterInventorySummaryService, CharacterProgressionService, CharacterStatsService,
+    GetBungieAccountService, InventoryItemService, HttpService, ManifestService, SharedBungie, SharedDashboard, VaultSummaryService],
   animations: [fadeInOut()]
 })
 export class AppComponent {
   constructor(private angulartics2GoogleAnalytics: Angulartics2GoogleAnalytics, private changeDetectorRef: ChangeDetectorRef, private http: HttpService, private manifestService: ManifestService,
     public mdDialog: MdDialog, private sharedBungie: SharedBungie, private sharedDashboard: SharedDashboard, public sharedApp: SharedApp) { }
+
+  resizeTimeoutId: NodeJS.Timer;
 
   ngOnInit() {
     this.manifestService.loadManifest().then(() => {
@@ -45,7 +49,7 @@ export class AppComponent {
   initApp() {
     if (this.sharedApp.accessToken == null) {
       // Use regular local storage for bungieAuthCode since we use it in index.html before we've loaded sharedApp
-      var bungieAuthCode = localStorage.getItem("bungieAuthCode");
+      let bungieAuthCode = localStorage.getItem("bungieAuthCode");
       if (bungieAuthCode == null)
         this.welcomeUser();
       else {
@@ -53,7 +57,9 @@ export class AppComponent {
           localStorage.removeItem("bungieAuthCode");
           this.loadUser();
         }).catch((error) => {
-          this.sharedApp.showError("There was an error when getting the Auth Token from Bungie. Please try again.", error);
+          this.sharedApp.showError("There was an error when getting the Access Token from Bungie. Please try again.", error);
+          this.sharedApp.logOutSubject.next();
+          this.sharedDashboard.userDashboards = CardDefinitions.defaultDashboards;
           this.setAppInitialized();
         });
       }
@@ -93,6 +99,7 @@ export class AppComponent {
         this.setAppInitialized();
       });
     }).catch((error) => {
+      this.sharedApp.showError("Could not load membership for the current user. This is probably an error with Bungie's servers, please try again later.");
       this.setAppInitialized();
     });
   }
@@ -108,6 +115,13 @@ export class AppComponent {
   //Global dom events
   @HostListener('window:resize', ['$event'])
   onResize(event) {
+    console.log("resize");
     this.sharedApp.onResize();
+
+    // Hack for Safari since it doesn't actually resize immediately
+    clearTimeout(this.resizeTimeoutId);
+    this.resizeTimeoutId = setTimeout(() => {
+      this.sharedApp.onResize();
+    }, 200);
   }
 }

@@ -1,0 +1,403 @@
+@import '../../../styles/theme.scss';
+
+//Blue grey color pallette https://material.io/guidelines/style/color.html#color-color-palette
+
+//These styles apply to both dashboard and fullscreen
+.dd-inventory {
+    background-color: #37474F;
+    color: $app-text-light;
+    padding: 10px 0 40px;
+
+    .edit-menu-wrap {
+        position: absolute;
+        top: 0;
+        right: 15%;
+        z-index: 1;
+        display: flex;
+        background-color: rgba(0,0,0,.7);
+        padding: 0 3px;
+
+        .menu-option {
+            padding: 6px;
+            cursor: pointer;
+
+            &:last-of-type {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            $iconHeight: 55px;
+            $iconWidth: 55px;
+
+            .icon {
+                box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+                pointer-events: none;
+                width: $iconWidth;
+                height: $iconHeight;
+                background-size: contain;
+
+                &.vault {
+                    background-color: #607D8B;
+                }
+            }
+
+            .close {
+                width: $iconWidth;
+                height: $iconHeight;
+
+                md-icon {
+                    @include md-icon-size(36px);
+                }
+            }
+        }
+    }
+
+    .search-text-wrap {
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 2%;
+
+        .search-text {
+            margin-top: 5px;
+
+            &.mat-input-container {
+                ::ng-deep .mat-input-placeholder {
+                    color: $app-text-light;
+                    opacity: 1;
+                }
+
+                &.mat-focused {
+                    ::ng-deep .mat-input-placeholder {
+                        opacity: .7;
+                    }
+                }
+            }
+
+            ::ng-deep .mat-input-underline {
+                background-color: $app-text-light;
+            }
+
+            ::ng-deep .mat-input-ripple {
+                background-color: rgba(mat-color($app-secondary), .5);
+            }
+        }
+    }
+
+    .non-transferrable {
+        margin: 0 5px 10px;
+        flex: 1;
+
+        md-slide-toggle {
+            margin: 5px 0;
+        }
+    }
+
+    .character-wrap {
+        .character-header {
+            position: relative;
+            max-width: 400px;
+            font-family: destiny;
+            margin-left: 2%;
+            margin-top: 40px;
+
+            &.vault-header {
+                .background {
+                    width: 400px;
+                    height: 81px;
+                    background-size: contain;
+                }
+
+                .top-left {
+                    top: 13px;
+                    left: 100px;
+                }
+            }
+
+            .background {
+                cursor: pointer;
+                width: 100%;
+                display: block;
+            }
+
+            .icon {
+                pointer-events: none;
+                position: absolute;
+                width: 81px;
+                height: 81px;
+                top: 0;
+                left: 3px;
+                background-repeat: no-repeat;
+                background-size: contain;
+            }
+
+            .top-left {
+                pointer-events: none;
+                position: absolute;
+                font-size: 2.1em;
+                top: 8px;
+                left: 95px;
+            }
+
+            .bottom-left {
+                pointer-events: none;
+                position: absolute;
+                font-size: 1.25em;
+                bottom: 7px;
+                left: 98px;
+                letter-spacing: .5px;
+                opacity: .8;
+            }
+
+            .top-right {
+                pointer-events: none;
+                position: absolute;
+                font-size: 2.2em;
+                top: 6px;
+                right: 9px;
+            }
+
+            .bottom-right {
+                pointer-events: none;
+                position: absolute;
+                font-size: 1.2em;
+                bottom: 5px;
+                right: 11px;
+                color: #FFEB3B;
+                display: flex;
+
+                .star {
+                    font-size: 1em;
+                    margin-right: 1px;
+                }
+            }
+
+            .option {
+                position: absolute;
+                width: 32px;
+                height: 32px;
+                transition: all 300ms ease-in-out;
+                transition-property: transform, bottom;
+                cursor: pointer;
+
+                md-icon {
+                    height: 26px;
+                    width: 26px;
+                    font-size: 26px;
+                }
+
+                &.refresh {
+                    top: 4px;
+                    right: -40px;
+                }
+
+                &.carrot {
+                    bottom: -1px;
+                    right: -40px;
+
+                    &.expanded {
+                        bottom: -8px;
+                        transform: scaleY(-1);
+                    }
+                }
+            }
+        }
+
+        .inventory-wrap {
+            display: flex;
+            flex-flow: wrap;
+            align-content: flex-start;
+            align-items: flex-start;
+            overflow-y: hidden;
+
+            .bucket-group {
+                margin-left: 2%;
+                flex-basis: calc(100vw - 25px);
+                margin-bottom: 10px;
+            }
+
+            .bucket-wrap {
+                .bucket-header {
+                    margin: 12px 0 5px;
+                    font-family: destiny;
+                    font-size: 1.4em;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    color: $app-text-light;
+                }
+
+                .bucket {
+                    display: flex;
+                    flex-flow: wrap;
+                    justify-content: left;
+
+                    dd-inventory-item {
+                        cursor: pointer;
+
+                        &.edit-mode {
+                            opacity: .65;
+                        }
+
+                        &.selected {
+                            opacity: 1;
+                        }
+
+                        &.transfer-disabled {
+                            cursor: not-allowed;
+
+                            ::ng-deep .icon {
+                                opacity: .4;
+
+                                &::after {
+                                    content: 'X';
+                                    background-color: #f00;
+                                    height: 100%;
+                                    display: flex;
+                                    align-items: center;
+                                    font-size: 3em;
+                                    justify-content: center;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@mixin smallScreenSize {
+    padding: 2px 0 20px 4px;
+
+    .edit-menu-wrap {
+        right: 8px;
+        padding-right: 0;
+
+        .menu-option {
+            padding: 4px 2px;
+
+            $iconHeight: 48px;
+            $iconWidth: 48px;
+
+            .icon {
+                width: $iconWidth;
+                height: $iconHeight;
+            }
+
+            .close {
+                width: $iconWidth - 5;
+                height: $iconHeight;
+            }
+        }
+    }
+
+    .character-wrap {
+        .character-header {
+            max-width: 345px;
+            margin-left: 1%;
+
+            &.vault-header {
+                .background {
+                    width: 345px;
+                    height: 70px;
+                }
+
+                .top-left {
+                    top: 13px;
+                    left: 85px;
+                }
+            }
+
+            .icon {
+                width: 69px;
+                width: 69px;
+            }
+
+            .option {
+                &.refresh {
+                    top: 0;
+                }
+            }
+
+            .top-left {
+                font-size: 1.9em;
+                top: 4px;
+                left: 80px;
+            }
+
+            .bottom-left {
+                bottom: 4px;
+                left: 83px;
+            }
+
+            .top-right {
+                font-size: 1.8em;
+                top: 6px;
+            }
+
+            .bottom-right {
+                font-size: 1.1em;
+                bottom: 3px;
+            }
+        }
+
+        .inventory-wrap {
+            margin-left: 0;
+
+            .bucket-group {
+                margin-left: 1%;
+                flex: unset;
+                margin: 0 4px;
+            }
+
+            .bucket-wrap {
+                .bucket-header {
+                    font-size: 1.3em;
+                    margin: 8px 2px 3px;
+                }
+            }
+        }
+    }
+}
+@mixin largeScreenSize {
+    .character-wrap {
+        .inventory-wrap {
+            .bucket-group {
+                flex-basis: calc(50vw - 10px);
+                max-width: 45%;
+            }
+        }
+    }
+}
+
+//These styles only applies to dashboard cards
+.dd-card-content.dd-inventory {
+    height: calc(100% - 40px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    @include smallScreenSize();
+
+    .edit-menu-wrap {
+        top: 40px;
+    }
+}
+
+//These styles only apply to fullscreen mode
+.dd-fullscreen.dd-inventory {
+    height: calc(100vh - 64px);
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+// Apply XL styles, only when in fullscreen mode
+@media(min-width: 850px) {
+    .dd-fullscreen.dd-inventory {
+        @include largeScreenSize();
+    }
+}
+// Apply phone styles
+@media(max-width: 600px) {
+    .dd-fullscreen.dd-inventory {
+        // Header bar changes height at 600px
+        height: calc(100vh - 56px);
+        @include smallScreenSize();
+    }
+}

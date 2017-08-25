@@ -1,69 +1,90 @@
-import { Directive, ElementRef, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Directive, EventEmitter, HostListener, Input, Output } from '@angular/core';
+
+import { debounceBy } from '../../shared/decorators';
 
 @Directive({
   selector: '[ddMouseEvents]'
 })
-export class MouseEventsDirective implements OnDestroy {
-  @Output()
-  onMouseDown = new EventEmitter<void>();
+export class MouseEventsDirective {
+  @Input()
+  longPressDuration: number = 450;
 
   @Output()
-  onMouseUp = new EventEmitter<void>();
+  mouseDown = new EventEmitter<void>();
 
-  private mouseDownBound: boolean = false;
-  private mouseUpBound: boolean = false;
+  @Output()
+  mouseUp = new EventEmitter<void>();
 
-  constructor(protected elementRef: ElementRef) {
+  @Output()
+  longPress = new EventEmitter<void>();
 
+  private supportsTouch: boolean = false;
+
+  private longPressTimeoutId: NodeJS.Timer;
+  private longPressHappened: boolean = false;
+
+  private touchStartY: number;
+  private touchDelta: number = 10;
+  private cancelTouchAndPress: boolean = false;
+
+  constructor() { }
+
+  // Listen for mouse events
+  @HostListener('mousedown', ['$event'])
+  onMouseDown() {
+    // If this device supports touchstart, don't handle mouseDown event
+    if (this.supportsTouch) return;
+    this.down();
   }
 
-  ngOnInit() {
-    //Manually subscribe to events instead of HostListener since we don't want to listen to events the parent element doesn't care about
-    if (this.onMouseDown.observers.length > 0) {
-      this.mouseDownBound = true;
+  @HostListener('mouseup', ['$event'])
+  onMouseUp() {
+    if (this.supportsTouch) return;
+    this.up();
+  }
 
-      this.elementRef.nativeElement.addEventListener('mousedown', (mouseEvent: MouseEvent) => {
-        this.mouseDownHandler();
-      });
+  // Listen for mobile events too
+  @HostListener('touchstart', ['$event'])
+  touchStart(event: TouchEvent) {
+    this.touchStartY = event.touches[0].clientY;
+    this.supportsTouch = true;
+    this.down();
+  }
 
-      this.elementRef.nativeElement.addEventListener('touchstart', (mouseEvent: MouseEvent) => {
-        this.mouseDownHandler();
-        event.preventDefault();
-        event.stopPropagation();
-      });
-    }
+  @HostListener('touchmove', ['$event'])
+  @debounceBy(50)
+  touchMove(event: TouchEvent) {
+    // If we already know we're going to cancel events, return
+    if (this.cancelTouchAndPress) return;
 
-    if (this.onMouseUp.observers.length > 0) {
-      this.mouseUpBound = true;
-
-      this.elementRef.nativeElement.addEventListener('mouseup', (mouseEvent: MouseEvent) => {
-        this.mouseUpHandler();
-      });
-
-      this.elementRef.nativeElement.addEventListener('touchend', (mouseEvent: MouseEvent) => {
-        this.mouseUpHandler();
-        event.preventDefault();
-        event.stopPropagation();
-      });
+    // If user has dragged over the acceptable delta, cancel the long press handler
+    let dif = Math.abs(this.touchStartY - event.touches[0].clientY);
+    if (dif > this.touchDelta) {
+      this.cancelTouchAndPress = true;
+      clearTimeout(this.longPressTimeoutId);
     }
   }
 
-  ngOnDestroy() {
-    if (this.mouseDownBound) {
-      this.elementRef.nativeElement.removeEventListener('mousedown');
-      this.elementRef.nativeElement.removeEventListener('touchstart');
-    }
-    if (this.mouseUpBound) {
-      this.elementRef.nativeElement.removeEventListener('mouseup');
-      this.elementRef.nativeElement.removeEventListener('touchend');
-    }
+  @HostListener('touchend', ['$event'])
+  touchEnd(event: TouchEvent) {
+    this.supportsTouch = true;
+    this.up();
   }
 
-  mouseDownHandler() {
-    console.log("mouseDownHandler");
+  down() {
+    this.mouseDown.emit();
+    this.longPressHappened = false;
+    this.cancelTouchAndPress = false;
+    this.longPressTimeoutId = setTimeout(() => {
+      this.longPress.emit();
+      this.longPressHappened = true;
+    }, this.longPressDuration);
   }
-  mouseUpHandler() {
-    console.log("mouseUpHandler");
+
+  up() {
+    if (!this.longPressHappened && !this.cancelTouchAndPress)
+      this.mouseUp.emit();
+    clearTimeout(this.longPressTimeoutId);
   }
 
 }

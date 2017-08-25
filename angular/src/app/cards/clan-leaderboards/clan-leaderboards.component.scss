@@ -1,0 +1,130 @@
+@import '../../../styles/theme.scss';
+
+// Card Theme Notes:
+// Using Material color palette "Light Blue" with 900 as #01579B and 700 as #0288D1
+// The shading in the stat grid is done with a background-color: rgba(0,0,0,.1) and is not a separate color
+
+// These styles apply to both dashboard and fullscreen
+.dd-clan-leaderboards {
+    background-color: #0288D1;
+    color: $app-text-light;
+
+    .gamertag-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: -10px;
+        padding-top: 5px;
+    }
+
+    .toolbar {
+        background-color: #01579B;
+        color: $app-text-light;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 10px 4%;
+
+        .icon {
+            left: 7px;
+            top: 16px;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-repeat: no-repeat;
+            background-size: contain;
+            margin-right: 8px;
+        }
+
+        .clan-name {
+            min-width: 160px;
+            overflow-x: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .toolbar-menu {
+            .title {
+                margin-left: 5px;
+            }
+        }
+
+    }
+
+    .clan-error {
+        color: $app-text-light;
+        font-size: .9em;
+        padding: 10px 20px;
+    }
+
+    .stat-group {
+        overflow: auto;
+        height: calc(100% - 125px);
+
+        .stat-container {
+            overflow-y: auto;
+            display: flex;
+            flex-flow: wrap;
+            align-content: flex-start;
+            align-items: flex-start;
+            padding: 0 5px;
+
+            .stat-section {
+                flex: 1 0 240px;
+                margin: 8px 5px;
+                box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.3);
+
+                .header {
+                    background-color: #01579B;
+                    padding: 8px;
+                    font-size: .95em;
+                    letter-spacing: 1px;
+                    margin: 0;
+                    text-align: center;
+                    display: block;
+                }
+
+                div {
+                    color: $app-text-light;
+                    padding: 6px 4px;
+                    display: flex;
+                    font-size: .9em;
+                    letter-spacing: .5px;
+
+                    span {
+                        &:first-of-type {
+                            margin: 0 20px 0 10px;
+                        }
+
+                        &:nth-child(2) {
+                            flex: 1;
+                        }
+
+                        &:last-of-type {
+                            opacity: .8;
+                            margin: 0 10px;
+                        }
+                    }
+
+                    &:nth-child(even) {
+                        background-color: rgba(0,0,0,.1);
+                    }
+
+                    &.highlight-row {
+                        background-color: rgba(#fff,.4);
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+// These styles only applies to dashboard card modes
+.dd-card-content.dd-clan-leaderboards {
+    height: calc(100% - 40px);
+}
+
+// These styles only apply to fullscreen mode
+.dd-fullscreen.dd-clan-leaderboards {
+    height: 100%;
+}
